@@ -29,12 +29,13 @@ export default class LinkConverterPlugin extends Plugin {
     }
 
     const editor = activeView.editor;
-    const content = editor.getValue();
+    const selectedText = editor.getSelection();
+    const content = selectedText || editor.getValue();
 
-    // Regular expression to find internal links, including block and heading references
-    const internalLinkRegex = /\[\[([^\]|#\^]+)(?:#([^\]|^]+))?(?:\^([^\]|]+))?(?:\|([^\]]+))?\]\]/g;
+    const internalLinkRegex = /\[\[([^\]|#\^]+)(?:#([^\]|^]+))?(?:\^([^\]|]+))?(?:\|([^\]]+))?\]\]/gu;
     let match;
     let newContent = content;
+    let foundMatch = false;
 
     while ((match = internalLinkRegex.exec(content)) !== null) {
       const fullMatch = match[0];
@@ -58,11 +59,20 @@ export default class LinkConverterPlugin extends Plugin {
         const linkText = alias || noteTitle;
         const replacement = `[${linkText}](${uri})`;
         newContent = newContent.replace(fullMatch, replacement);
+        foundMatch = true;
       }
     }
 
-    editor.setValue(newContent);
-    new Notice('Converted internal links to external links.');
+    if (foundMatch) {
+      if (selectedText) {
+        editor.replaceSelection(newContent);
+      } else {
+        editor.setValue(newContent);
+      }
+      new Notice('Converted internal links to external links.');
+    } else {
+      new Notice('No internal links found to convert.');
+    }
   }
 
   async convertExternalToInternalLinks() {
@@ -73,45 +83,33 @@ export default class LinkConverterPlugin extends Plugin {
     }
 
     const editor = activeView.editor;
-    const content = editor.getValue();
+    const selectedText = editor.getSelection();
+    const content = selectedText || editor.getValue();
 
-    // Regular expression to find Obsidian URIs
-    const externalLinkRegex = /\[([^\]]+)\]\(obsidian:\/\/open\?path=([^\)\#]+)(?:\#([^\)\^]+))?(?:\^([^\)]+))?\)/g;
+    const externalLinkRegex = /obsidian:\/\/open\?vault=([^\&]+)&file=([^\&\)\#]+)(?:\#([^\)\^]+))?(?:\^([^\)]+))?/g;
     let match;
     let newContent = content;
 
     while ((match = externalLinkRegex.exec(content)) !== null) {
       const fullMatch = match[0];
-      const linkText = match[1];
-      const encodedPath = match[2];
+      const fileParam = match[2];
       const heading = match[3];
-      const blockRef = match[4];
 
-      const notePath = decodeURIComponent(encodedPath);
-      const noteFile = this.app.vault.getAbstractFileByPath(notePath);
+      let link = `[[${decodeURIComponent(fileParam)}`;
 
-      if (noteFile instanceof TFile) {
-        const noteTitle = noteFile.basename;
-        let link = `[[${noteTitle}`;
-
-        if (heading) {
-          link += `#${heading}`;
-        }
-
-        if (blockRef) {
-          link += `^${blockRef}`;
-        }
-
-        if (linkText !== noteTitle) {
-          link += `|${linkText}`;
-        }
-
-        link += ']]';
-        newContent = newContent.replace(fullMatch, link);
+      if (heading) {
+        link += `#${heading}`;
       }
+
+      link += ']]';
+      newContent = newContent.replace(fullMatch, link);
     }
 
-    editor.setValue(newContent);
+    if (selectedText) {
+      editor.replaceSelection(newContent);
+    } else {
+      editor.setValue(newContent);
+    }
     new Notice('Converted external links to internal links.');
   }
 }
