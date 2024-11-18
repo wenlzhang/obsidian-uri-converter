@@ -27,18 +27,54 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
           return;
         }
 
-        // Regex for Obsidian URI matching (updated to include 'uid')
-        const uriRegex = /obsidian:\/\/(?:open|adv-uri)\?vault=[^&]+&(file|uuid|uid)=([^&]+)/g;
+        // Updated regex to match the entire Obsidian URI
+        const uriRegex = /obsidian:\/\/[^\s]+/g;
 
         // Replace URIs with markdown links
-        const newText = text.replace(uriRegex, (match, type, identifier) => {
-          const decodedIdentifier = decodeURIComponent(identifier);
-          if (type === 'file') {
-            return this.findAndCreateInternalLinkByName(decodedIdentifier);
-          } else if (type === 'uuid' || type === 'uid') {
-            return this.findAndCreateInternalLinkByUUID(decodedIdentifier);
+        const newText = text.replace(uriRegex, (match) => {
+          try {
+            // Parse the URI
+            const uri = new URL(match);
+            const params = new URLSearchParams(uri.search);
+
+            // Get parameters
+            const vault = params.get('vault');
+            const type = params.has('file')
+              ? 'file'
+              : params.has('uuid')
+              ? 'uuid'
+              : params.has('uid')
+              ? 'uid'
+              : null;
+            const identifier = params.get('file') || params.get('uuid') || params.get('uid');
+            const block = params.get('block');
+
+            if (!identifier) {
+              return match; // Cannot process without an identifier
+            }
+
+            const decodedIdentifier = decodeURIComponent(identifier);
+
+            let internalLink = '';
+
+            if (type === 'file') {
+              internalLink = this.findAndCreateInternalLinkByName(decodedIdentifier);
+            } else if (type === 'uuid' || type === 'uid') {
+              internalLink = this.findAndCreateInternalLinkByUUID(decodedIdentifier);
+            } else {
+              return match; // Unrecognized type
+            }
+
+            if (block) {
+              const decodedBlock = decodeURIComponent(block);
+              internalLink = internalLink.replace(/\]\]$/, `#^${decodedBlock}]]`);
+            }
+
+            return internalLink;
+          } catch (e) {
+            console.error(`Failed to parse URI: ${match}`, e);
+            return match; // Return the original match if parsing fails
           }
-          return match; // If not a recognized type, return the original link
         });
 
         if (newText === text) {
@@ -71,7 +107,7 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
       return markdownLink;
     } else {
       console.log(`No matching note found for UUID: ${uuid}`);
-      return `obsidian://adv-uri?vault=Obsidian%20Plugin%20Test&uid=${encodeURIComponent(uuid)}`;
+      return `obsidian://adv-uri?vault=${encodeURIComponent(this.app.vault.getName())}&uid=${encodeURIComponent(uuid)}`;
     }
   }
 
@@ -88,7 +124,7 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
       return markdownLink;
     } else {
       console.log(`No matching note found for name: ${noteName}`);
-      return `obsidian://adv-uri?vault=Obsidian%20Plugin%20Test&file=${encodeURIComponent(noteName)}`;
+      return `obsidian://adv-uri?vault=${encodeURIComponent(this.app.vault.getName())}&file=${encodeURIComponent(noteName)}`;
     }
   }
 }
