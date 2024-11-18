@@ -1,115 +1,80 @@
-import { App, Notice, Plugin, TFile, MarkdownView } from 'obsidian';
+import { Plugin, Notice, MarkdownView } from 'obsidian';
 
-export default class LinkConverterPlugin extends Plugin {
+export default class ConvertURIsToLinksPlugin extends Plugin {
   async onload() {
-    console.log('Loading Link Converter Plugin');
+    console.log('Loading Convert URIs to Internal Links plugin');
 
+    // Set up the command
     this.addCommand({
-      id: 'convert-internal-to-external',
-      name: 'Convert Internal Links to External Links',
-      callback: () => this.convertInternalToExternalLinks(),
-    });
+      id: 'convert-uris-to-links',
+      name: 'Convert URIs to Internal Links',
+      callback: async () => {
+        const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (!activeView) {
+          new Notice('No active Markdown editor found.');
+          return;
+        }
 
-    this.addCommand({
-      id: 'convert-external-to-internal',
-      name: 'Convert External Links to Internal Links',
-      callback: () => this.convertExternalToInternalLinks(),
+        const editorInstance = activeView.editor;
+        if (!editorInstance) {
+          new Notice('No active editor found.');
+          return;
+        }
+
+        const text = editorInstance.getSelection();
+        if (!text) {
+          new Notice('No text selected.');
+          return;
+        }
+
+        // 更新正则表达式以匹配 Obsidian URI
+        const uriRegex = /obsidian:\/\/open\?vault=[^&]+&file=([^&]+)/g;
+
+        // 替换 URIs 为 markdown 链接
+        const newText = text.replace(uriRegex, (match, fileName) => {
+          // 解码文件名并添加方括号
+          const decodedFileName = decodeURIComponent(fileName);
+          return `[[${decodedFileName}]]`;
+        });
+
+        // Set the replaced text back into the editor
+        editorInstance.replaceSelection(newText);
+        new Notice('URIs converted to internal links!');
+      }
     });
   }
 
   onunload() {
-    console.log('Unloading Link Converter Plugin');
+    console.log('Unloading Convert URIs to Internal Links plugin');
   }
 
-  async convertInternalToExternalLinks() {
-    const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!activeView) {
-      new Notice('No active markdown view found.');
-      return;
-    }
+  findAndCreateInternalLink(noteId: string): string {
+    console.log(`Finding internal link for note ID: ${noteId}`);
 
-    const editor = activeView.editor;
-    const selectedText = editor.getSelection();
-    const content = selectedText || editor.getValue();
+    // Find the note with the matching vault ID
+    const noteFile = this.app.vault.getMarkdownFiles().find(
+      (file) => this.app.metadataCache.getFileCache(file)?.frontmatter?.id === noteId
+    );
 
-    const internalLinkRegex = /\[\[([^\]|#\^]+)(?:#([^\]|^]+))?(?:\^([^\]|]+))?(?:\|([^\]]+))?\]\]/gu;
-    let match;
-    let newContent = content;
-    let foundMatch = false;
+    if (noteFile) {
+      const markdownLink = `[[${noteFile.basename}]]`;
+      console.log(`Converted to internal link: ${markdownLink}`);
+      return markdownLink;
+    } else {
+      // Fallback: try to find note by name (UUID mismatch)
+      const noteName = noteId.replace(/-/g, ' ');
+      const noteFileByName = this.app.vault.getMarkdownFiles().find(
+        (file) => file.basename.toLowerCase() === noteName.toLowerCase()
+      );
 
-    while ((match = internalLinkRegex.exec(content)) !== null) {
-      const fullMatch = match[0];
-      const noteTitle = match[1];
-      const heading = match[2];
-      const blockRef = match[3];
-      const alias = match[4];
-
-      const noteFile = this.app.metadataCache.getFirstLinkpathDest(noteTitle, '');
-      if (noteFile) {
-        let uri = `obsidian://open?path=${encodeURIComponent(noteFile.path)}`;
-
-        if (heading) {
-          uri += `#${encodeURIComponent(heading)}`;
-        }
-
-        if (blockRef) {
-          uri += `#^${encodeURIComponent(blockRef)}`;
-        }
-
-        const linkText = alias || noteTitle;
-        const replacement = `[${linkText}](${uri})`;
-        newContent = newContent.replace(fullMatch, replacement);
-        foundMatch = true;
-      }
-    }
-
-    if (foundMatch) {
-      if (selectedText) {
-        editor.replaceSelection(newContent);
+      if (noteFileByName) {
+        const markdownLink = `[[${noteFileByName.basename}]]`;
+        console.log(`Converted to internal link by name: ${markdownLink}`);
+        return markdownLink;
       } else {
-        editor.setValue(newContent);
+        console.log(`No matching note found for ID: ${noteId}`);
+        return noteId;
       }
-      new Notice('Converted internal links to external links.');
-    } else {
-      new Notice('No internal links found to convert.');
     }
-  }
-
-  async convertExternalToInternalLinks() {
-    const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!activeView) {
-      new Notice('No active markdown view found.');
-      return;
-    }
-
-    const editor = activeView.editor;
-    const selectedText = editor.getSelection();
-    const content = selectedText || editor.getValue();
-
-    const externalLinkRegex = /obsidian:\/\/open\?vault=([^\&]+)&file=([^\&\)\#]+)(?:\#([^\)\^]+))?(?:\^([^\)]+))?/g;
-    let match;
-    let newContent = content;
-
-    while ((match = externalLinkRegex.exec(content)) !== null) {
-      const fullMatch = match[0];
-      const fileParam = match[2];
-      const heading = match[3];
-
-      let link = `[[${decodeURIComponent(fileParam)}`;
-
-      if (heading) {
-        link += `#${heading}`;
-      }
-
-      link += ']]';
-      newContent = newContent.replace(fullMatch, link);
-    }
-
-    if (selectedText) {
-      editor.replaceSelection(newContent);
-    } else {
-      editor.setValue(newContent);
-    }
-    new Notice('Converted external links to internal links.');
   }
 }
