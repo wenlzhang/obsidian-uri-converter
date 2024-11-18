@@ -1,8 +1,31 @@
-import { Plugin, Notice, MarkdownView, TFile, Vault } from 'obsidian';
+import {
+  Plugin,
+  Notice,
+  MarkdownView,
+  App,
+  PluginSettingTab,
+  Setting,
+} from 'obsidian';
+
+// Define the settings interface and default values
+interface ConvertURIsToLinksPluginSettings {
+  uidFieldName: string;
+}
+
+const DEFAULT_SETTINGS: ConvertURIsToLinksPluginSettings = {
+  uidFieldName: 'uuid',
+};
 
 export default class ConvertURIsToLinksPlugin extends Plugin {
+  settings: ConvertURIsToLinksPluginSettings;
+
   async onload() {
     console.log('Loading Convert URIs to Internal Links plugin');
+
+    await this.loadSettings();
+
+    // Add the settings tab
+    this.addSettingTab(new ConvertURIsToLinksPluginSettingTab(this.app, this));
 
     // Set up the command
     this.addCommand({
@@ -46,7 +69,8 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
               : params.has('uid')
               ? 'uid'
               : null;
-            const identifier = params.get('file') || params.get('uuid') || params.get('uid');
+            const identifier =
+              params.get('file') || params.get('uuid') || params.get('uid');
             const block = params.get('block');
 
             if (!identifier) {
@@ -85,7 +109,7 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
         // Set the replaced text back into the editor
         editorInstance.replaceSelection(newText);
         new Notice('URIs converted to internal links!');
-      }
+      },
     });
   }
 
@@ -93,13 +117,24 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
     console.log('Unloading Convert URIs to Internal Links plugin');
   }
 
+  async loadSettings() {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+
+  async saveSettings() {
+    await this.saveData(this.settings);
+  }
+
   findAndCreateInternalLinkByUUID(uuid: string): string {
     console.log(`Finding internal link for UUID: ${uuid}`);
 
-    // Find the note with the matching front matter 'uuid'
-    const noteFile = this.app.vault.getMarkdownFiles().find(
-      (file) => this.app.metadataCache.getFileCache(file)?.frontmatter?.uuid === uuid
-    );
+    const uidFieldName = this.settings.uidFieldName;
+
+    // Find the note with the matching front matter UID field
+    const noteFile = this.app.vault.getMarkdownFiles().find((file) => {
+      const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
+      return frontmatter && frontmatter[uidFieldName] === uuid;
+    });
 
     if (noteFile) {
       const markdownLink = `[[${noteFile.basename}]]`;
@@ -107,7 +142,9 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
       return markdownLink;
     } else {
       console.log(`No matching note found for UUID: ${uuid}`);
-      return `obsidian://adv-uri?vault=${encodeURIComponent(this.app.vault.getName())}&uid=${encodeURIComponent(uuid)}`;
+      return `obsidian://adv-uri?vault=${encodeURIComponent(
+        this.app.vault.getName()
+      )}&uid=${encodeURIComponent(uuid)}`;
     }
   }
 
@@ -124,7 +161,40 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
       return markdownLink;
     } else {
       console.log(`No matching note found for name: ${noteName}`);
-      return `obsidian://adv-uri?vault=${encodeURIComponent(this.app.vault.getName())}&file=${encodeURIComponent(noteName)}`;
+      return `obsidian://adv-uri?vault=${encodeURIComponent(
+        this.app.vault.getName()
+      )}&file=${encodeURIComponent(noteName)}`;
     }
+  }
+}
+
+// Settings tab class
+class ConvertURIsToLinksPluginSettingTab extends PluginSettingTab {
+  plugin: ConvertURIsToLinksPlugin;
+
+  constructor(app: App, plugin: ConvertURIsToLinksPlugin) {
+    super(app, plugin);
+    this.plugin = plugin;
+  }
+
+  display(): void {
+    const { containerEl } = this;
+
+    containerEl.empty();
+
+    containerEl.createEl('h2', { text: 'Convert URIs to Internal Links Settings' });
+
+    new Setting(containerEl)
+      .setName('UID field in frontmatter')
+      .setDesc('Specify the field name used for UID in the frontmatter of your notes.')
+      .addText((text) =>
+        text
+          .setPlaceholder('Enter UID field name')
+          .setValue(this.plugin.settings.uidFieldName)
+          .onChange(async (value) => {
+            this.plugin.settings.uidFieldName = value.trim() || 'uuid';
+            await this.plugin.saveSettings();
+          })
+      );
   }
 }
