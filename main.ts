@@ -50,56 +50,44 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
           return;
         }
 
-        // Updated regex to match the entire Obsidian URI
-        const uriRegex = /obsidian:\/\/[^\s]+/g;
+        // Updated regex to match Obsidian URIs and markdown links containing Obsidian URIs
+        const uriRegex = /(\[([^\]]*)\]\((obsidian:\/\/[^\)]+)\))|(obsidian:\/\/[^\s\)]+)/g;
 
         // Replace URIs with markdown links
-        const newText = text.replace(uriRegex, (match) => {
-          try {
-            // Parse the URI
-            const uri = new URL(match);
-            const params = new URLSearchParams(uri.search);
+        const newText = text.replace(
+          uriRegex,
+          (match, markdownLink, displayText, uriInMarkdown, plainUri) => {
+            try {
+              let uri: string;
+              let display: string | null = null;
 
-            // Get parameters
-            const vault = params.get('vault');
-            const type = params.has('file')
-              ? 'file'
-              : params.has('uuid')
-              ? 'uuid'
-              : params.has('uid')
-              ? 'uid'
-              : null;
-            const identifier =
-              params.get('file') || params.get('uuid') || params.get('uid');
-            const block = params.get('block');
+              if (uriInMarkdown) {
+                // It's a markdown link
+                uri = uriInMarkdown;
+                display = displayText;
+              } else {
+                // It's a plain Obsidian URI
+                uri = plainUri;
+              }
 
-            if (!identifier) {
-              return match; // Cannot process without an identifier
+              // Process the URI to get the internal link
+              let internalLink = this.processObsidianURI(uri);
+
+              if (display) {
+                // Include the display text
+                // Remove the leading and trailing [[ ]]
+                internalLink = internalLink.substring(2, internalLink.length - 2); // Remove [[ and ]]
+
+                return `[[${internalLink}|${display}]]`;
+              } else {
+                return internalLink;
+              }
+            } catch (e) {
+              console.error(`Failed to parse URI: ${uri}`, e);
+              return match; // Return the original match if parsing fails
             }
-
-            const decodedIdentifier = decodeURIComponent(identifier);
-
-            let internalLink = '';
-
-            if (type === 'file') {
-              internalLink = this.findAndCreateInternalLinkByName(decodedIdentifier);
-            } else if (type === 'uuid' || type === 'uid') {
-              internalLink = this.findAndCreateInternalLinkByUUID(decodedIdentifier);
-            } else {
-              return match; // Unrecognized type
-            }
-
-            if (block) {
-              const decodedBlock = decodeURIComponent(block);
-              internalLink = internalLink.replace(/\]\]$/, `#^${decodedBlock}]]`);
-            }
-
-            return internalLink;
-          } catch (e) {
-            console.error(`Failed to parse URI: ${match}`, e);
-            return match; // Return the original match if parsing fails
           }
-        });
+        );
 
         if (newText === text) {
           new Notice('No valid URIs to convert found.');
@@ -123,6 +111,53 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
 
   async saveSettings() {
     await this.saveData(this.settings);
+  }
+
+  processObsidianURI(uri: string): string {
+    try {
+      // Parse the URI
+      const parsedUri = new URL(uri);
+      const params = new URLSearchParams(parsedUri.search);
+
+      // Get parameters
+      const vault = params.get('vault');
+      const type = params.has('file')
+        ? 'file'
+        : params.has('uuid')
+        ? 'uuid'
+        : params.has('uid')
+        ? 'uid'
+        : null;
+      const identifier =
+        params.get('file') || params.get('uuid') || params.get('uid');
+      const block = params.get('block');
+
+      if (!identifier) {
+        return uri; // Cannot process without an identifier
+      }
+
+      const decodedIdentifier = decodeURIComponent(identifier);
+
+      let internalLink = '';
+
+      if (type === 'file') {
+        internalLink = this.findAndCreateInternalLinkByName(decodedIdentifier);
+      } else if (type === 'uuid' || type === 'uid') {
+        internalLink = this.findAndCreateInternalLinkByUUID(decodedIdentifier);
+      } else {
+        return uri; // Unrecognized type
+      }
+
+      if (block) {
+        const decodedBlock = decodeURIComponent(block);
+        internalLink = internalLink.replace(/\]\]$/, `#^${decodedBlock}]]`);
+      }
+
+      return internalLink;
+    } catch (e) {
+      console.error(`Failed to parse URI: ${uri}`, e);
+      return uri; // Return the original URI if parsing fails
+    }
   }
 
   findAndCreateInternalLinkByUUID(uuid: string): string {
