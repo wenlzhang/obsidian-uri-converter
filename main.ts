@@ -10,10 +10,12 @@ import {
 // Define the settings interface and default values
 interface ConvertURIsToLinksPluginSettings {
   uidFieldName: string;
+  enforceVaultName: boolean;
 }
 
 const DEFAULT_SETTINGS: ConvertURIsToLinksPluginSettings = {
   uidFieldName: 'uuid',
+  enforceVaultName: true,
 };
 
 export default class ConvertURIsToLinksPlugin extends Plugin {
@@ -73,6 +75,11 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
               // Process the URI to get the internal link
               let internalLink = this.processObsidianURI(uri);
 
+              // If no conversion was made, return the original match
+              if (!internalLink || internalLink === uri) {
+                return match;
+              }
+
               if (display) {
                 // Include the display text
                 // Remove the leading and trailing [[ ]]
@@ -121,6 +128,23 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
 
       // Get parameters
       const vault = params.get('vault');
+      const currentVaultName = this.app.vault.getName();
+
+      // Compare vault names if the setting is enabled
+      if (
+        this.settings.enforceVaultName &&
+        vault &&
+        decodeURIComponent(vault) !== currentVaultName
+      ) {
+        console.warn(
+          `URI points to a different vault: ${decodeURIComponent(
+            vault
+          )}. Skipping conversion.`
+        );
+        return uri; // Return the original URI if it points to a different vault
+      }
+
+      // Proceed with existing code
       const type = params.has('file')
         ? 'file'
         : params.has('uuid')
@@ -139,7 +163,7 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
 
       const decodedIdentifier = decodeURIComponent(identifier);
 
-      let internalLink = '';
+      let internalLink: string | null = null;
 
       if (type === 'file') {
         internalLink = this.findAndCreateInternalLinkByName(decodedIdentifier);
@@ -147,6 +171,11 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
         internalLink = this.findAndCreateInternalLinkByUUID(decodedIdentifier);
       } else {
         return uri; // Unrecognized type
+      }
+
+      if (!internalLink) {
+        // Note not found; return the original URI
+        return uri;
       }
 
       if (block) {
@@ -164,7 +193,7 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
     }
   }
 
-  findAndCreateInternalLinkByUUID(uuid: string): string {
+  findAndCreateInternalLinkByUUID(uuid: string): string | null {
     console.log(`Finding internal link for UUID: ${uuid}`);
 
     const uidFieldName = this.settings.uidFieldName;
@@ -181,13 +210,11 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
       return markdownLink;
     } else {
       console.log(`No matching note found for UUID: ${uuid}`);
-      return `obsidian://adv-uri?vault=${encodeURIComponent(
-        this.app.vault.getName()
-      )}&uid=${encodeURIComponent(uuid)}`;
+      return null;
     }
   }
 
-  findAndCreateInternalLinkByName(noteName: string): string {
+  findAndCreateInternalLinkByName(noteName: string): string | null {
     console.log(`Finding internal link for note name: ${noteName}`);
 
     const noteFile = this.app.vault.getMarkdownFiles().find(
@@ -200,9 +227,7 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
       return markdownLink;
     } else {
       console.log(`No matching note found for name: ${noteName}`);
-      return `obsidian://adv-uri?vault=${encodeURIComponent(
-        this.app.vault.getName()
-      )}&file=${encodeURIComponent(noteName)}`;
+      return null;
     }
   }
 }
@@ -221,17 +246,33 @@ class ConvertURIsToLinksPluginSettingTab extends PluginSettingTab {
 
     containerEl.empty();
 
-    containerEl.createEl('h2', { text: 'Convert URIs to Internal Links Settings' });
+    containerEl.createEl('h2', {
+      text: 'Convert URIs to Internal Links Settings',
+    });
 
     new Setting(containerEl)
       .setName('UID field in frontmatter')
-      .setDesc('Specify the field name used for UID in the frontmatter of your notes.')
+      .setDesc(
+        'Specify the field name used for UID in the frontmatter of your notes.'
+      )
       .addText((text) =>
         text
           .setPlaceholder('Enter UID field name')
           .setValue(this.plugin.settings.uidFieldName)
           .onChange(async (value) => {
             this.plugin.settings.uidFieldName = value.trim() || 'uuid';
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('Enforce Vault Name Matching')
+      .setDesc('Only convert URIs that point to the current vault.')
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.enforceVaultName)
+          .onChange(async (value) => {
+            this.plugin.settings.enforceVaultName = value;
             await this.plugin.saveSettings();
           })
       );
