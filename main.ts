@@ -131,6 +131,7 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
       const identifier =
         params.get('file') || params.get('uuid') || params.get('uid');
       const block = params.get('block');
+      const heading = params.get('heading');
 
       if (!identifier) {
         return uri; // Cannot process without an identifier
@@ -151,6 +152,9 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
       if (block) {
         const decodedBlock = decodeURIComponent(block);
         internalLink = internalLink.replace(/\]\]$/, `#^${decodedBlock}]]`);
+      } else if (heading) {
+        const decodedHeading = decodeURIComponent(heading);
+        internalLink = internalLink.replace(/\]\]$/, `#${decodedHeading}]]`);
       }
 
       return internalLink;
