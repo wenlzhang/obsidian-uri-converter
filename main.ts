@@ -266,7 +266,7 @@ class URIConverterSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Enforce Vault Name Matching')
+      .setName('Enforce vault name matching')
       .setDesc('Only convert URIs that point to the current vault.')
       .addToggle((toggle) =>
         toggle
