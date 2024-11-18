@@ -1,10 +1,13 @@
 {
-  "id": "link-converter-plugin",
-  "name": "Link Converter Plugin",
-  "version": "1.0.0",
-  "minAppVersion": "0.12.0",
-  "description": "Converts internal links to external links and vice versa.",
-  "author": "Your Name",
-  "authorUrl": "https://yourwebsite.com",
-  "isDesktopOnly": false
+  "id": "obsidian-uri-converter",
+  "name": "URI Converter",
+  "version": "0.0.1",
+  "minAppVersion": "1.0.0",
+  "description": "Converts Obsidian URIs to external links.",
+  "author": "wenlzhang",
+  "authorUrl": "https://github.com/wenlzhang",
+	"fundingUrl": {
+      "Buy Me a Coffee": "https://ko-fi.com/f84556"
+    },
+	"isDesktopOnly": false
 }

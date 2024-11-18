@@ -8,30 +8,30 @@ import {
 } from 'obsidian';
 
 // Define the settings interface and default values
-interface ConvertURIsToLinksPluginSettings {
+interface URIConverterSettings {
   uidFieldName: string;
   enforceVaultName: boolean;
 }
 
-const DEFAULT_SETTINGS: ConvertURIsToLinksPluginSettings = {
+const DEFAULT_SETTINGS: URIConverterSettings = {
   uidFieldName: 'uuid',
   enforceVaultName: true,
 };
 
-export default class ConvertURIsToLinksPlugin extends Plugin {
-  settings: ConvertURIsToLinksPluginSettings;
+export default class URIConverter extends Plugin {
+  settings: URIConverterSettings;
 
   async onload() {
-    console.log('Loading Convert URIs to Internal Links plugin');
+    console.log('Loading URI Converter plugin');
 
     await this.loadSettings();
 
     // Add the settings tab
-    this.addSettingTab(new ConvertURIsToLinksPluginSettingTab(this.app, this));
+    this.addSettingTab(new URIConverterSettingTab(this.app, this));
 
     // Set up the command
     this.addCommand({
-      id: 'convert-uris-to-links',
+      id: 'uri-converter',
       name: 'Convert URIs to Internal Links',
       callback: async () => {
         const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
@@ -109,7 +109,7 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
   }
 
   onunload() {
-    console.log('Unloading Convert URIs to Internal Links plugin');
+    console.log('Unloading URI Converter plugin');
   }
 
   async loadSettings() {
@@ -194,7 +194,7 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
   }
 
   findAndCreateInternalLinkByUUID(uuid: string): string | null {
-    console.log(`Finding internal link for UUID: ${uuid}`);
+    console.log(`Finding internal link for UID: ${uuid}`);
 
     const uidFieldName = this.settings.uidFieldName;
 
@@ -206,10 +206,10 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
 
     if (noteFile) {
       const markdownLink = `[[${noteFile.basename}]]`;
-      console.log(`Converted to internal link by UUID: ${markdownLink}`);
+      console.log(`Converted to internal link by UID: ${markdownLink}`);
       return markdownLink;
     } else {
-      console.log(`No matching note found for UUID: ${uuid}`);
+      console.log(`No matching note found for UID: ${uuid}`);
       return null;
     }
   }
@@ -233,10 +233,10 @@ export default class ConvertURIsToLinksPlugin extends Plugin {
 }
 
 // Settings tab class
-class ConvertURIsToLinksPluginSettingTab extends PluginSettingTab {
-  plugin: ConvertURIsToLinksPlugin;
+class URIConverterSettingTab extends PluginSettingTab {
+  plugin: URIConverter;
 
-  constructor(app: App, plugin: ConvertURIsToLinksPlugin) {
+  constructor(app: App, plugin: URIConverter) {
     super(app, plugin);
     this.plugin = plugin;
   }
@@ -247,7 +247,7 @@ class ConvertURIsToLinksPluginSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     containerEl.createEl('h2', {
-      text: 'Convert URIs to Internal Links Settings',
+      text: 'URI Converter',
     });
 
     new Setting(containerEl)
