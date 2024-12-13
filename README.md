@@ -4,39 +4,52 @@
 
 An [Obsidian](https://obsidian.md/) plugin to convert Obsidian URIs to Obsidian internal links.
 
-## Features
+## Why You Need URI Converter
 
-- Convert [Obsidian URIs](https://help.obsidian.md/Extending+Obsidian/Obsidian+URI) and [Advanced URIs](https://publish.obsidian.md/advanced-uri-doc/Home)
-- Convert various URI types
-    - Note links
-    - Heading links
-    - Block links
-- Convert various link formats
-    - Pure URIs, e.g., `obsidian://open?vault=my%20vault&file=my%20note`.
-    - URIs of Markdown URL format, e.g., `[Any text or empty](obsidian://open?vault=my%20vault&file=my%20note)`.
+**URI Converter** was developed to address a specific challenge faced by Obsidian users, including myself. It embodies two essential [PTKM Core Principles](https://exp.ptkm.net/ptkm-core-principles) that shape its functionality:
 
-## Usage
+- **Providing Context**: Ensuring no valuable information is lost in the task management process
+- **Linking Everything**: Bridging the gap between Obsidian and Todoist
 
-- Select any text containing the URIs to be converted, and call the command "URI Converter: Convert URIs to Internal Links"
-    - If the text contains several URIs, they will all be converted into Obsidian internal links.
-    - Text that is not URIs stays unchanged.
-- Settings: UID field in frontmatter
-    - One needs to specify an ID filed in the note frontmatter, as this is used to find the the corresponding note based on the UID info in the Advanced URI note links.
-- Settings: Enforce vault name matching
-    - This is for controlling whether the conversion command should work if the note comes from another vault. For example, sometimes you have a note in one vault but afterwards you move it to another vault.
+### The Challenge
 
-## The story
+As an avid Obsidian user, I frequently copy links to notes, headings, or blocks and use them in external apps like Todoist. These links provide valuable context for tasks in Todoist, but they didn't function as bidirectional links within Obsidian when copied back. This disrupted the seamless navigation and connection that Obsidian is known for.
 
-This plugin was born out of my own use case and a common challenge I faced while working in Obsidian. Often, I copy links to an Obsidian note, heading, or block—whether it’s a specific note, a snippet of text, or a task—and use these links in external apps like Todoist. For instance, I might add these links to the description field in Todoist to provide additional context for a task.
+### The Solution
 
-When it comes time to complete the task in Todoist, I revisit the description to review any relevant information. That's when I encounter the issue: while these external links point to my Obsidian content, they aren’t functional as bidirectional links within Obsidian when copied back. This breaks the seamless navigation and connection that Obsidian is known for.
+**URI Converter** was created to automate the conversion of external links into Obsidian-compatible internal links. With the URI Converter, you can:
 
-Manually converting these external links into Obsidian-compatible internal links was tedious, so I decided to create a solution—a plugin. Using the power of AI-assisted IDE tools, I was able to make the first basic version of the plugin work within an hour. Building on that foundation, it took just three hours in total to create the first complete version of the plugin.
+1. **Automate Link Conversion**: Save time by automatically converting external links to internal Obsidian links
+2. **Maintain Bidirectional Links**: Preserve the powerful linking capabilities of Obsidian
+3. **Enhance Workflow Efficiency**: Integrate seamlessly with external apps like Todoist
+4. **Focus on Productivity**: Spend less time on manual tasks and more on what matters
 
-With the **Obsidian URI Converter** plugin, I can now automate this conversion process, saving time and effort while maintaining the bidirectional linking power of Obsidian. This plugin makes working with external apps and Obsidian smoother and more efficient and has become an essential part of my workflow.
+## Documentation
 
-I hope this plugin can help you as well.
+📚 **[View Full Documentation](https://exp.ptkm.net/obsidian-uri-converter)**
 
-## Support me
+Visit the documentation site to learn how to make the most of URI Converter in your Obsidian workflow.
 
-<a href='https://ko-fi.com/C0C66C1TB' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+## Support & Community
+
+This plugin is a labor of love, developed and maintained during my free time after work and on weekends. A lot of thought, energy, and care goes into making it reliable, user-friendly, and aligned with PTKM principles.
+
+If you find this plugin valuable in your daily workflow, please consider supporting my work. Your support would mean the world to me and would help me dedicate more time and energy to:
+
+- Developing new features
+- Maintaining code quality
+- Providing support and documentation
+- Making the plugin even better for everyone
+
+### Ways to Support
+
+You can support this project in several ways:
+
+- ⭐ Star the project on GitHub
+- 💝 <a href='https://ko-fi.com/C0C66C1TB' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee' /></a>
+- [Sponsor](https://github.com/sponsors/wenlzhang) my work on GitHub
+- 💌 Share your success stories and feedback
+- 📢 Spread the word about the plugin
+- 🐛 [Report issues](https://github.com/wenlzhang/obsidian-uri-converter/issues) to help improve the plugin
+
+Thank you for being part of this journey! 🙏
