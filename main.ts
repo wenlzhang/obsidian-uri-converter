@@ -19,7 +19,7 @@ const DEFAULT_SETTINGS: URIConverterSettings = {
 };
 
 export default class URIConverter extends Plugin {
-  settings: URIConverterSettings;
+  settings: URIConverterSettings = DEFAULT_SETTINGS;
 
   async onload() {
     console.log('Loading URI Converter plugin');
@@ -59,10 +59,9 @@ export default class URIConverter extends Plugin {
         const newText = text.replace(
           uriRegex,
           (match, markdownLink, displayText, uriInMarkdown, plainUri) => {
+            let uri: string = match; // Initialize with the original match as fallback
+            let display: string | null = null;
             try {
-              let uri: string;
-              let display: string | null = null;
-
               if (uriInMarkdown) {
                 // It's a markdown link
                 uri = uriInMarkdown;
