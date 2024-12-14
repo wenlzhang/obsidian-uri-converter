@@ -32,7 +32,7 @@ export default class URIConverter extends Plugin {
     // Set up the command
     this.addCommand({
       id: 'uri-converter',
-      name: 'Convert URIs to Internal Links',
+      name: 'Convert URIs to internal links',
       callback: async () => {
         const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (!activeView) {
@@ -244,10 +244,6 @@ class URIConverterSettingTab extends PluginSettingTab {
     const { containerEl } = this;
 
     containerEl.empty();
-
-    containerEl.createEl('h2', {
-      text: 'URI Converter',
-    });
 
     new Setting(containerEl)
       .setName('UID field in frontmatter')

@@ -1,14 +1,13 @@
 {
   "name": "obsidian-uri-converter",
   "version": "1.0.0",
-  "description": "Converts Obsidian URIs to external links.",
+  "description": "Convert Obsidian URIs to Obsidian internal links.",
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "node esbuild.config.mjs production"
   },
   "author": "wenlzhang",
-  "license": "MIT",
   "devDependencies": {
     "@types/node": "^16.11.7",
     "esbuild": "^0.13.15",
