@@ -3,7 +3,7 @@
 	"name": "URI Converter",
 	"version": "0.4.1",
 	"minAppVersion": "1.0.0",
-	"description": "Convert Obsidian URIs to Obsidian internal links.",
+	"description": "Convert URIs to internal links.",
 	"author": "wenlzhang",
 	"authorUrl": "https://github.com/wenlzhang",
 	"fundingUrl": {
