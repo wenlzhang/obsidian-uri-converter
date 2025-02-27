@@ -16,9 +16,10 @@
   "author": "wenlzhang",
   "devDependencies": {
     "@types/node": "^16.11.7",
-    "esbuild": "^0.13.15",
+    "builtin-modules": "^5.0.0",
+    "esbuild": "^0.25.0",
     "eslint": "^8.15.0",
-    "gh": "^2.8.9",
+    "gh": "^1.13.9",
     "jest": "^27.5.1",
     "obsidian": "latest",
     "prettier": "^2.6.2",
