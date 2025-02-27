@@ -1,11 +1,4 @@
-import {
-  Plugin,
-  Notice,
-  MarkdownView,
-  App,
-  PluginSettingTab,
-  Setting,
-} from 'obsidian';
+import { Plugin, Notice, MarkdownView, App, PluginSettingTab, Setting } from 'obsidian';
 
 // Define the settings interface and default values
 interface URIConverterSettings {
@@ -136,9 +129,7 @@ export default class URIConverter extends Plugin {
         decodeURIComponent(vault) !== currentVaultName
       ) {
         console.warn(
-          `URI points to a different vault: ${decodeURIComponent(
-            vault
-          )}. Skipping conversion.`
+          `URI points to a different vault: ${decodeURIComponent(vault)}. Skipping conversion.`
         );
         return uri; // Return the original URI if it points to a different vault
       }
@@ -151,8 +142,7 @@ export default class URIConverter extends Plugin {
         : params.has('uid')
         ? 'uid'
         : null;
-      const identifier =
-        params.get('file') || params.get('uuid') || params.get('uid');
+      const identifier = params.get('file') || params.get('uuid') || params.get('uid');
       const block = params.get('block');
       const heading = params.get('heading');
 
@@ -216,9 +206,9 @@ export default class URIConverter extends Plugin {
   findAndCreateInternalLinkByName(noteName: string): string | null {
     console.log(`Finding internal link for note name: ${noteName}`);
 
-    const noteFile = this.app.vault.getMarkdownFiles().find(
-      (file) => file.basename.toLowerCase() === noteName.toLowerCase()
-    );
+    const noteFile = this.app.vault
+      .getMarkdownFiles()
+      .find((file) => file.basename.toLowerCase() === noteName.toLowerCase());
 
     if (noteFile) {
       const markdownLink = `[[${noteFile.basename}]]`;
@@ -247,9 +237,7 @@ class URIConverterSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('UID field in frontmatter')
-      .setDesc(
-        'Specify the field name used for UID in the frontmatter of your notes.'
-      )
+      .setDesc('Specify the field name used for UID in the frontmatter of your notes.')
       .addText((text) =>
         text
           .setPlaceholder('Enter UID field name')
@@ -264,12 +252,10 @@ class URIConverterSettingTab extends PluginSettingTab {
       .setName('Enforce vault name matching')
       .setDesc('Only convert URIs that point to the current vault.')
       .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.enforceVaultName)
-          .onChange(async (value) => {
-            this.plugin.settings.enforceVaultName = value;
-            await this.plugin.saveSettings();
-          })
+        toggle.setValue(this.plugin.settings.enforceVaultName).onChange(async (value) => {
+          this.plugin.settings.enforceVaultName = value;
+          await this.plugin.saveSettings();
+        })
       );
   }
 }
