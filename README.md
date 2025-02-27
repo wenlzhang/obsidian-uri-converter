@@ -6,7 +6,7 @@ An [Obsidian](https://obsidian.md/) plugin to convert Obsidian URIs to Obsidian 
 
 ## Why You Need URI Converter
 
-**URI Converter** was developed to address a specific challenge faced by Obsidian users, including myself. It embodies two essential [PTKM Core Principles](https://exp.ptkm.net/ptkm-core-principles) that shape its functionality:
+**URI Converter** was developed to address a specific challenge faced by Obsidian users, including myself. It embodies two essential [PTKM Core Principles](https://ptkm.net/ptkm-core-principles) that shape its functionality:
 
 - **Providing Context**: Ensuring no valuable information is lost in the task management process
 - **Linking Everything**: Bridging the gap between Obsidian and Todoist
@@ -26,7 +26,7 @@ As an avid Obsidian user, I frequently copy links to notes, headings, or blocks 
 
 ## Documentation
 
-📚 **[View Full Documentation](https://exp.ptkm.net/obsidian-uri-converter)**
+📚 **[View Full Documentation](https://ptkm.net/obsidian-uri-converter)**
 
 Visit the documentation site to learn how to make the most of URI Converter in your Obsidian workflow.
 

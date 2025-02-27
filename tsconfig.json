@@ -10,5 +10,6 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true
   },
-  "include": ["main.ts"]
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"]
 }

@@ -1,9 +1,9 @@
 {
-  "id": "obsidian-uri-converter",
+  "id": "uri-converter",
   "name": "URI Converter",
   "version": "0.0.1",
   "minAppVersion": "1.0.0",
-  "description": "Converts Obsidian URIs to external links.",
+  "description": "Convert Obsidian URIs to Obsidian internal links.",
   "author": "wenlzhang",
   "authorUrl": "https://github.com/wenlzhang",
 	"fundingUrl": {
