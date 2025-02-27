@@ -16,6 +16,8 @@
   "author": "wenlzhang",
   "devDependencies": {
     "@types/node": "^16.11.7",
+    "@typescript-eslint/eslint-plugin": "^8.25.0",
+    "@typescript-eslint/parser": "^8.25.0",
     "builtin-modules": "^5.0.0",
     "esbuild": "^0.25.0",
     "eslint": "^8.15.0",
