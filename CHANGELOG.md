@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+## [0.4.2] - 2025-03-11
+
+### Changes
+
+- Address review comments
+- Update README.md
+- Update manifest.json
+
 ## [0.4.1] - 2025-02-27
 
 ### Changes
