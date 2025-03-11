@@ -43,18 +43,18 @@ export default class URIConverter extends Plugin {
                 if (!view || !(view instanceof MarkdownView)) {
                     return false;
                 }
-                
+
                 // Check if text is selected
                 const selection = editor.getSelection();
                 if (!selection) {
                     return false;
                 }
-                
+
                 // If we're just checking, return true to indicate the command is available
                 if (checking) {
                     return true;
                 }
-                
+
                 // Updated regex to match Obsidian URIs and markdown links containing Obsidian URIs
                 const uriRegex =
                     /(\[([^\]]*)\]\((obsidian:\/\/[^\)]+)\))|(obsidian:\/\/[^\s\)]+)/g;
@@ -243,7 +243,9 @@ export default class URIConverter extends Plugin {
         if (noteFile) {
             const markdownLink = `[[${noteFile.basename}]]`;
             if (this.settings.debugMode) {
-                console.log(`Converted to internal link by UID: ${markdownLink}`);
+                console.log(
+                    `Converted to internal link by UID: ${markdownLink}`
+                );
             }
             return markdownLink;
         } else {
@@ -260,12 +262,17 @@ export default class URIConverter extends Plugin {
         }
 
         // Use getFirstLinkpathDest to find a file by name
-        const noteFile = this.app.metadataCache.getFirstLinkpathDest(noteName, "");
+        const noteFile = this.app.metadataCache.getFirstLinkpathDest(
+            noteName,
+            ""
+        );
 
         if (noteFile) {
             const markdownLink = `[[${noteFile.basename}]]`;
             if (this.settings.debugMode) {
-                console.log(`Converted to internal link by name: ${markdownLink}`);
+                console.log(
+                    `Converted to internal link by name: ${markdownLink}`
+                );
             }
             return markdownLink;
         } else {
@@ -318,7 +325,7 @@ class URIConverterSettingTab extends PluginSettingTab {
                         await this.plugin.saveSettings();
                     })
             );
-            
+
         new Setting(containerEl)
             .setName("Debug mode")
             .setDesc("Enable console logging for debugging purposes.")
