@@ -5,24 +5,29 @@ import {
     App,
     PluginSettingTab,
     Setting,
+    TFile,
 } from "obsidian";
 
 // Define the settings interface and default values
 interface URIConverterSettings {
     uidFieldName: string;
     enforceVaultName: boolean;
+    debugMode: boolean;
 }
 
 const DEFAULT_SETTINGS: URIConverterSettings = {
     uidFieldName: "uuid",
     enforceVaultName: true,
+    debugMode: false,
 };
 
 export default class URIConverter extends Plugin {
     settings: URIConverterSettings = DEFAULT_SETTINGS;
 
     async onload() {
-        console.log("Loading URI Converter plugin");
+        if (this.settings.debugMode) {
+            console.log("Loading URI Converter plugin");
+        }
 
         await this.loadSettings();
 
@@ -33,32 +38,29 @@ export default class URIConverter extends Plugin {
         this.addCommand({
             id: "uri-converter",
             name: "Convert URIs to internal links",
-            callback: async () => {
-                const activeView =
-                    this.app.workspace.getActiveViewOfType(MarkdownView);
-                if (!activeView) {
-                    new Notice("No active Markdown editor found.");
-                    return;
+            editorCheckCallback: (checking: boolean, editor, view) => {
+                // Check if we're in a markdown view
+                if (!view || !(view instanceof MarkdownView)) {
+                    return false;
                 }
-
-                const editorInstance = activeView.editor;
-                if (!editorInstance) {
-                    new Notice("No active editor found.");
-                    return;
+                
+                // Check if text is selected
+                const selection = editor.getSelection();
+                if (!selection) {
+                    return false;
                 }
-
-                const text = editorInstance.getSelection();
-                if (!text) {
-                    new Notice("No text selected.");
-                    return;
+                
+                // If we're just checking, return true to indicate the command is available
+                if (checking) {
+                    return true;
                 }
-
+                
                 // Updated regex to match Obsidian URIs and markdown links containing Obsidian URIs
                 const uriRegex =
                     /(\[([^\]]*)\]\((obsidian:\/\/[^\)]+)\))|(obsidian:\/\/[^\s\)]+)/g;
 
                 // Replace URIs with markdown links
-                const newText = text.replace(
+                const newText = selection.replace(
                     uriRegex,
                     (
                         match,
@@ -100,26 +102,31 @@ export default class URIConverter extends Plugin {
                                 return internalLink;
                             }
                         } catch (e) {
-                            console.error(`Failed to parse URI: ${uri}`, e);
+                            if (this.settings.debugMode) {
+                                console.error(`Failed to parse URI: ${uri}`, e);
+                            }
                             return match; // Return the original match if parsing fails
                         }
                     }
                 );
 
-                if (newText === text) {
+                if (newText === selection) {
                     new Notice("No valid URIs to convert found.");
-                    return;
+                    return true;
                 }
 
                 // Set the replaced text back into the editor
-                editorInstance.replaceSelection(newText);
+                editor.replaceSelection(newText);
                 new Notice("URIs converted to internal links!");
+                return true;
             },
         });
     }
 
     onunload() {
-        console.log("Unloading URI Converter plugin");
+        if (this.settings.debugMode) {
+            console.log("Unloading URI Converter plugin");
+        }
     }
 
     async loadSettings() {
@@ -150,11 +157,13 @@ export default class URIConverter extends Plugin {
                 vault &&
                 decodeURIComponent(vault) !== currentVaultName
             ) {
-                console.warn(
-                    `URI points to a different vault: ${decodeURIComponent(
-                        vault
-                    )}. Skipping conversion.`
-                );
+                if (this.settings.debugMode) {
+                    console.warn(
+                        `URI points to a different vault: ${decodeURIComponent(
+                            vault
+                        )}. Skipping conversion.`
+                    );
+                }
                 return uri; // Return the original URI if it points to a different vault
             }
 
@@ -210,13 +219,17 @@ export default class URIConverter extends Plugin {
 
             return internalLink;
         } catch (e) {
-            console.error(`Failed to parse URI: ${uri}`, e);
+            if (this.settings.debugMode) {
+                console.error(`Failed to parse URI: ${uri}`, e);
+            }
             return uri; // Return the original URI if parsing fails
         }
     }
 
     findAndCreateInternalLinkByUUID(uuid: string): string | null {
-        console.log(`Finding internal link for UID: ${uuid}`);
+        if (this.settings.debugMode) {
+            console.log(`Finding internal link for UID: ${uuid}`);
+        }
 
         const uidFieldName = this.settings.uidFieldName;
 
@@ -229,29 +242,36 @@ export default class URIConverter extends Plugin {
 
         if (noteFile) {
             const markdownLink = `[[${noteFile.basename}]]`;
-            console.log(`Converted to internal link by UID: ${markdownLink}`);
+            if (this.settings.debugMode) {
+                console.log(`Converted to internal link by UID: ${markdownLink}`);
+            }
             return markdownLink;
         } else {
-            console.log(`No matching note found for UID: ${uuid}`);
+            if (this.settings.debugMode) {
+                console.log(`No matching note found for UID: ${uuid}`);
+            }
             return null;
         }
     }
 
     findAndCreateInternalLinkByName(noteName: string): string | null {
-        console.log(`Finding internal link for note name: ${noteName}`);
+        if (this.settings.debugMode) {
+            console.log(`Finding internal link for note name: ${noteName}`);
+        }
 
-        const noteFile = this.app.vault
-            .getMarkdownFiles()
-            .find(
-                (file) => file.basename.toLowerCase() === noteName.toLowerCase()
-            );
+        // Use getFirstLinkpathDest to find a file by name
+        const noteFile = this.app.metadataCache.getFirstLinkpathDest(noteName, "");
 
         if (noteFile) {
             const markdownLink = `[[${noteFile.basename}]]`;
-            console.log(`Converted to internal link by name: ${markdownLink}`);
+            if (this.settings.debugMode) {
+                console.log(`Converted to internal link by name: ${markdownLink}`);
+            }
             return markdownLink;
         } else {
-            console.log(`No matching note found for name: ${noteName}`);
+            if (this.settings.debugMode) {
+                console.log(`No matching note found for name: ${noteName}`);
+            }
             return null;
         }
     }
@@ -295,6 +315,18 @@ class URIConverterSettingTab extends PluginSettingTab {
                     .setValue(this.plugin.settings.enforceVaultName)
                     .onChange(async (value) => {
                         this.plugin.settings.enforceVaultName = value;
+                        await this.plugin.saveSettings();
+                    })
+            );
+            
+        new Setting(containerEl)
+            .setName("Debug mode")
+            .setDesc("Enable console logging for debugging purposes.")
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.settings.debugMode)
+                    .onChange(async (value) => {
+                        this.plugin.settings.debugMode = value;
                         await this.plugin.saveSettings();
                     })
             );
