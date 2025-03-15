@@ -4,6 +4,18 @@
 
 An [Obsidian](https://obsidian.md/) plugin that converts Obsidian URIs to Obsidian internal links.
 
+## Videos and Articles
+
+### Videos
+
+<a href="https://youtu.be/KNWP4A1Shfk" target="_blank">
+  <img src="./docs/attachment/thumbnail-demo.png" width="800" alt="New Plugin for Obsidian: Quickly Fix Invalid External Links" />
+</a>
+
+### Articles
+
+
+
 ## Why You Need URI Converter
 
 **URI Converter** was developed to address a specific challenge faced by Obsidian users, including myself. It embodies two essential [PTKM Core Principles](https://ptkm.net/ptkm-core-principles) that shape its functionality:
