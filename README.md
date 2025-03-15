@@ -6,6 +6,19 @@ An [Obsidian](https://obsidian.md/) plugin that converts Obsidian URIs to Obsidi
 
 ![demo](/docs/attachment/demo.gif)
 
+## Key Features of URI Converter
+
+**URI Converter** supports the following features:
+
+- Convert [Obsidian URIs](https://help.obsidian.md/Extending+Obsidian/Obsidian+URI) and [Advanced URIs](https://publish.obsidian.md/advanced-uri-doc/Home)
+- Convert various URI types
+    - Note links
+    - Heading links
+    - Block links
+- Convert various link formats
+    - Pure URIs, e.g., `obsidian://open?vault=my%20vault&file=my%20note`.
+    - URIs of Markdown URL format, e.g., `[Any text or empty](obsidian://open?vault=my%20vault&file=my%20note)`.
+
 ## Videos and Articles
 
 ### Videos
