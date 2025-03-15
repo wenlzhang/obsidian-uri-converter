@@ -27,6 +27,10 @@ An [Obsidian](https://obsidian.md/) plugin that converts Obsidian URIs to Obsidi
   <img src="./docs/attachment/thumbnail-demo.jpg" width="800" alt="New Plugin for Obsidian: Quickly Fix Invalid External Links" />
 </a>
 
+<a href="https://youtu.be/2Ga5VPW-2IQ" target="_blank">
+  <img src="https://img.youtube.com/vi/2Ga5VPW-2IQ/maxresdefault.jpg" width="800" alt="Use These Tools to Build a Smooth Task & Knowledge Management Workflow" />
+</a>
+
 ### Articles
 
 
