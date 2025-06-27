@@ -8,19 +8,26 @@ import {
     TFile,
 } from "obsidian";
 
+// Define the settings interface and enum for display text mode
+enum DisplayTextMode {
+    Always = "always",
+    OnlyIfDifferent = "onlyIfDifferent",
+    Never = "never"
+}
+
 // Define the settings interface and default values
 interface URIConverterSettings {
     uidFieldName: string;
     enforceVaultName: boolean;
     debugMode: boolean;
-    preserveDisplayText: boolean;
+    displayTextMode: DisplayTextMode;
 }
 
 const DEFAULT_SETTINGS: URIConverterSettings = {
     uidFieldName: "uuid",
     enforceVaultName: true,
     debugMode: false,
-    preserveDisplayText: true,
+    displayTextMode: DisplayTextMode.OnlyIfDifferent,
 };
 
 export default class URIConverter extends Plugin {
@@ -91,15 +98,28 @@ export default class URIConverter extends Plugin {
                                 return match;
                             }
 
-                            if (display && this.settings.preserveDisplayText) {
-                                // Include the display text if the setting is enabled
-                                // Remove the leading and trailing [[ ]]
-                                internalLink = internalLink.substring(
-                                    2,
-                                    internalLink.length - 2
-                                ); // Remove [[ and ]]
+                            // Extract the note name from the internal link
+                            const noteName = internalLink.substring(
+                                2,
+                                internalLink.length - 2
+                            ); // Remove [[ and ]]
 
-                                return `[[${internalLink}|${display}]]`;
+                            // Determine if display text should be included based on the display text mode
+                            if (display) {
+                                if (this.settings.displayTextMode === DisplayTextMode.Always) {
+                                    // Always include display text
+                                    return `[[${noteName}|${display}]]`;
+                                } else if (this.settings.displayTextMode === DisplayTextMode.OnlyIfDifferent) {
+                                    // Include display text only if it differs from the note name
+                                    if (display !== noteName) {
+                                        return `[[${noteName}|${display}]]`;
+                                    } else {
+                                        return `[[${noteName}]]`;
+                                    }
+                                } else {
+                                    // Never include display text (DisplayTextMode.Never)
+                                    return `[[${noteName}]]`;
+                                }
                             } else {
                                 return internalLink;
                             }
@@ -329,13 +349,16 @@ class URIConverterSettingTab extends PluginSettingTab {
             );
         
         new Setting(containerEl)
-            .setName("Preserve display text")
-            .setDesc("When converting Markdown links with display text, preserve the display text in the converted link. If disabled, only the link without display text will be used.")
-            .addToggle((toggle) =>
-                toggle
-                    .setValue(this.plugin.settings.preserveDisplayText)
-                    .onChange(async (value) => {
-                        this.plugin.settings.preserveDisplayText = value;
+            .setName("Display text handling")
+            .setDesc("Choose how to handle display text when converting Markdown links.")
+            .addDropdown((dropdown) =>
+                dropdown
+                    .addOption(DisplayTextMode.Always, "Always include display text")
+                    .addOption(DisplayTextMode.OnlyIfDifferent, "Only include if different from note name")
+                    .addOption(DisplayTextMode.Never, "Never include display text")
+                    .setValue(this.plugin.settings.displayTextMode)
+                    .onChange(async (value: string) => {
+                        this.plugin.settings.displayTextMode = value as DisplayTextMode;
                         await this.plugin.saveSettings();
                     })
             );
