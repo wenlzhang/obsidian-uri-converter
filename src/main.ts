@@ -12,7 +12,7 @@ import {
 enum DisplayTextMode {
     Always = "always",
     OnlyIfDifferent = "onlyIfDifferent",
-    Never = "never"
+    Never = "never",
 }
 
 // Define the settings interface and default values
@@ -91,7 +91,7 @@ export default class URIConverter extends Plugin {
                             }
 
                             // Process the URI to get the internal link
-                            let internalLink = this.processObsidianURI(uri);
+                            const internalLink = this.processObsidianURI(uri);
 
                             // If no conversion was made, return the original match
                             if (!internalLink || internalLink === uri) {
@@ -106,10 +106,16 @@ export default class URIConverter extends Plugin {
 
                             // Determine if display text should be included based on the display text mode
                             if (display) {
-                                if (this.settings.displayTextMode === DisplayTextMode.Always) {
+                                if (
+                                    this.settings.displayTextMode ===
+                                    DisplayTextMode.Always
+                                ) {
                                     // Always include display text
                                     return `[[${noteName}|${display}]]`;
-                                } else if (this.settings.displayTextMode === DisplayTextMode.OnlyIfDifferent) {
+                                } else if (
+                                    this.settings.displayTextMode ===
+                                    DisplayTextMode.OnlyIfDifferent
+                                ) {
                                     // Include display text only if it differs from the note name
                                     if (display !== noteName) {
                                         return `[[${noteName}|${display}]]`;
@@ -347,18 +353,30 @@ class URIConverterSettingTab extends PluginSettingTab {
                         await this.plugin.saveSettings();
                     })
             );
-        
+
         new Setting(containerEl)
             .setName("Display text handling")
-            .setDesc("Choose how to handle display text when converting Markdown links.")
+            .setDesc(
+                "Choose how to handle display text when converting Markdown links."
+            )
             .addDropdown((dropdown) =>
                 dropdown
-                    .addOption(DisplayTextMode.Always, "Always include display text")
-                    .addOption(DisplayTextMode.OnlyIfDifferent, "Only include if different from note name")
-                    .addOption(DisplayTextMode.Never, "Never include display text")
+                    .addOption(
+                        DisplayTextMode.Always,
+                        "Always include display text"
+                    )
+                    .addOption(
+                        DisplayTextMode.OnlyIfDifferent,
+                        "Only include if different from note name"
+                    )
+                    .addOption(
+                        DisplayTextMode.Never,
+                        "Never include display text"
+                    )
                     .setValue(this.plugin.settings.displayTextMode)
                     .onChange(async (value: string) => {
-                        this.plugin.settings.displayTextMode = value as DisplayTextMode;
+                        this.plugin.settings.displayTextMode =
+                            value as DisplayTextMode;
                         await this.plugin.saveSettings();
                     })
             );
@@ -374,6 +392,5 @@ class URIConverterSettingTab extends PluginSettingTab {
                         await this.plugin.saveSettings();
                     })
             );
-
     }
 }
