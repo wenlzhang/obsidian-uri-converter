@@ -10,6 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+
+## [0.5.0] - 2025-06-27
+
+### Changes
+
+- Fix eslint warnings
+- Fine tune display text option
+- Allow hiding display text
+- Update README.md
+- Update README.md
+- Update README.md
+- Add demo
+- Improve code format
+
 ## [0.4.2] - 2025-03-11
 
 ### Changes
