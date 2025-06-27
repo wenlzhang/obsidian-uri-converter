@@ -13,12 +13,14 @@ interface URIConverterSettings {
     uidFieldName: string;
     enforceVaultName: boolean;
     debugMode: boolean;
+    preserveDisplayText: boolean;
 }
 
 const DEFAULT_SETTINGS: URIConverterSettings = {
     uidFieldName: "uuid",
     enforceVaultName: true,
     debugMode: false,
+    preserveDisplayText: true,
 };
 
 export default class URIConverter extends Plugin {
@@ -89,8 +91,8 @@ export default class URIConverter extends Plugin {
                                 return match;
                             }
 
-                            if (display) {
-                                // Include the display text
+                            if (display && this.settings.preserveDisplayText) {
+                                // Include the display text if the setting is enabled
                                 // Remove the leading and trailing [[ ]]
                                 internalLink = internalLink.substring(
                                     2,
@@ -325,6 +327,18 @@ class URIConverterSettingTab extends PluginSettingTab {
                         await this.plugin.saveSettings();
                     })
             );
+        
+        new Setting(containerEl)
+            .setName("Preserve display text")
+            .setDesc("When converting Markdown links with display text, preserve the display text in the converted link. If disabled, only the link without display text will be used.")
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.settings.preserveDisplayText)
+                    .onChange(async (value) => {
+                        this.plugin.settings.preserveDisplayText = value;
+                        await this.plugin.saveSettings();
+                    })
+            );
 
         new Setting(containerEl)
             .setName("Debug mode")
@@ -337,5 +351,6 @@ class URIConverterSettingTab extends PluginSettingTab {
                         await this.plugin.saveSettings();
                     })
             );
+
     }
 }
